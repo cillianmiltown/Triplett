@@ -1,0 +1,250 @@
+---
+title: "Triplett Replication"
+subtitle: "Sample Analysis on Simulated Data"
+author: "Cillian McHugh"
+date: "7th March 2022"
+bibliography: "resources/bib/My Library.bib"
+csl: "resources/bib/apa.csl"
+output:
+  bookdown::html_document2:
+    fig_caption: yes
+    toc: true
+    toc_float:
+      toc_collapsed: false
+    toc_depth: 4
+    number_sections: false
+editor_options: 
+  chunk_output_type: console
+---
+  
+# Overview
+  
+Below is analysis for simulated data
+
+| Trial | Group A     | Group B     |
+|:-----:|:-----------:|:-----------:|
+| 1     | Alone       | Alone       |
+| 2     | Alone       | Together    |
+| 3     | Together    | Alone       |
+| 4     | Together    | Together    |
+
+
+
+```{r setup, include=FALSE}
+# Setting Up
+
+knitr::opts_chunk$set(echo = FALSE)
+#knitr::opts_chunk$set(eval = TRUE, echo = TRUE)
+knitr::opts_chunk$set(include = FALSE)
+```
+
+
+
+```{r}
+rm(list = ls())
+
+library(nlme)
+library(lme4)
+library(ez)
+library(simr)
+library(rstatix)
+library(desnum)
+
+```
+
+```{r}
+
+
+n <- 350 # must be divisible by 2
+N <- 4*n
+save(N, file = "N.RData")
+
+source("simulate_data.R")
+x <- df
+
+```
+
+
+```{r, echo=T}
+model1 <- lmerTest::lmer(time2 ~ 
+                           #order*
+                           condition
+                         # + age
+                         # + gender
+                         + (1+condition|ID), data=x)
+
+summary(model1)
+model1
+anova(model1)
+```
+
+# Initial Tests
+
+## Check the ANOVA Table
+
+```{r, include=TRUE}
+anova(model1)
+summary(model1)
+```
+
+
+
+```{r, echo=T}
+model1 <- lmerTest::lmer(time ~ 
+                           order*condition
+                         + age
+                         + gender
+                         + (1+condition|ID), data=x)
+
+summary(model1)
+model1
+anova(model1)
+```
+
+# Initial Tests
+
+## Check the ANOVA Table
+
+```{r, include=TRUE}
+anova(model1)
+summary(model1)
+```
+
+# Follow-Up Analyses
+
+```{r}
+
+x <- df[which(x$order==2|x$order==3),]
+
+
+```
+
+## Isolate Trials 2 and 3
+
+### Test for differences depending on Condition
+
+Basic Descriptives
+
+```{r, include=TRUE}
+tapply(x$time, x$condition, descriptives)
+```
+
+
+```{r, include=TRUE}
+tapply(x$time, x$group, descriptives)
+```
+
+Mixed between-within factorial ANOVA
+
+```{r, include=TRUE}
+
+rstatix::anova_test(
+  data = x, dv = time, wid = ID,
+  within = condition,
+  between = group
+)
+
+
+```
+
+
+```{r, include=TRUE}
+x$condition3 <- paste(x$condition, x$group)
+
+aov1 <- aov(time ~ condition3,x)
+summary(aov1)
+TukeyHSD(aov1)
+
+
+```
+
+
+```{r, include=TRUE}
+tapply(x$time, x$condition3, descriptives)
+```
+
+
+```{r, include=TRUE}
+
+ggplot(x,aes(x=(condition3),y=time, fill = condition))+
+  geom_violin(width = .4) +
+  stat_summary(fun=mean, geom="point", shape=23, size=2, color="black")+
+  geom_boxplot(width=0.3, color="black")+
+#  geom_dotplot(binaxis='y', stackdir='center', dotsize=.05)+
+# violin plot with jittered points
+# 0.2 : degree of jitter in x direction
+  geom_jitter(shape=16, position=position_jitter(0.15), size=.3#, color="dark grey"
+              )
+# violin plot with median points
+#p + stat_summary(fun.y=median, geom="point", size=.2, color="red")
+
+
+```
+
+
+### Test for Order Effects within sub-sample
+
+Basic Descriptives
+
+```{r}
+x <- df
+```
+
+```{r, include=TRUE}
+tapply(x$time, x$order, descriptives)
+```
+
+
+```{r, include=TRUE}
+tapply(x$time, x$group, descriptives)
+```
+
+Mixed between-within factorial ANOVA
+
+```{r, include=TRUE}
+
+rstatix::anova_test(
+  data = x, dv = time, wid = ID,
+  within = order,
+  between = group
+)
+
+```
+
+
+
+```{r, include=TRUE}
+x$condition3 <- paste(x$order, x$group)
+
+aov1 <- aov(time ~ condition3,x)
+summary(aov1)
+TukeyHSD(aov1)
+
+
+```
+
+
+```{r, include=TRUE}
+tapply(x$time, x$condition3, descriptives)
+```
+
+
+```{r, include=TRUE}
+
+ggplot(x,aes(x=(condition3),y=time, fill = order, color = condition))+
+  geom_violin(width = .4) +
+  stat_summary(fun=mean, geom="point", shape=23, size=2, color="black")+
+  geom_boxplot(width=0.3, color="black")+
+#  geom_dotplot(binaxis='y', stackdir='center', dotsize=.05)+
+# violin plot with jittered points
+# 0.2 : degree of jitter in x direction
+  geom_jitter(shape=16, position=position_jitter(0.15), size=.6#, color="dark grey"
+              )
+# violin plot with median points
+#p + stat_summary(fun.y=median, geom="point", size=.2, color="red")
+
+
+```
+
+
+
