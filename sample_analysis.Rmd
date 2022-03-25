@@ -17,18 +17,6 @@ editor_options:
   chunk_output_type: console
 ---
   
-# Overview
-  
-Below is analysis for simulated data
-
-| Trial | Group A     | Group B     |
-|:-----:|:-----------:|:-----------:|
-| 1     | Alone       | Alone       |
-| 2     | Alone       | Together    |
-| 3     | Together    | Alone       |
-| 4     | Together    | Together    |
-
-
 
 ```{r setup, include=FALSE}
 # Setting Up
@@ -37,7 +25,6 @@ knitr::opts_chunk$set(echo = FALSE)
 #knitr::opts_chunk$set(eval = TRUE, echo = TRUE)
 knitr::opts_chunk$set(include = FALSE)
 ```
-
 
 
 ```{r}
@@ -52,10 +39,12 @@ library(desnum)
 
 ```
 
+
 ```{r}
 
-
-n <- 350 # must be divisible by 2
+n <- 200 # must be divisible by 2
+#n <- 184 # must be divisible by 2
+#n <- 184 # must be divisible by 2
 N <- 4*n
 save(N, file = "N.RData")
 
@@ -65,52 +54,190 @@ x <- df
 ```
 
 
-```{r, echo=T}
-model1 <- lmerTest::lmer(time2 ~ 
-                           #order*
+# Overview
+
+Below we outline our proposed design along with an accompanying analysis plan. We provide a sample analysis using simulated data.
+
+# Design and Analysis Plan
+
+The proposed study is a within subjects design. The core hypothesis is that the presence of another person completing the same task, will lead to improved performance on that task. Each participant will complete the task four times, twice alone, and twice in the presence of another participant.
+
+## Planned Analysis
+
+
+### Presence/Competition Effects
+
+To test this we will conduct a mixed effects model with presence included as a fixed effect and participant and presence included as random effects.
+
+```
+model1 <- lmerTest::lmer(time ~ 
                            condition
-                         # + age
-                         # + gender
                          + (1+condition|ID), data=x)
 
 summary(model1)
-model1
 anova(model1)
 ```
 
-# Initial Tests
+### Order Effects
 
-## Check the ANOVA Table
+To test for order effects we blocked our trials by two groups as in the table.
 
-```{r, include=TRUE}
-anova(model1)
-summary(model1)
+
+| Trial | Group A     | Group B     |
+|:-----:|:-----------:|:-----------:|
+| 1     | Alone       | Alone       |
+| 2     | Alone       | Together    |
+| 3     | Together    | Alone       |
+| 4     | Together    | Together    |
+
+
+A second mixed effect model will include order as a fixed effect, that may interact with condition).
+
 ```
+model2 <- lmerTest::lmer(time ~ 
+                           order*condition
+                         + (1+condition|ID), data=x)
 
+anova(model1,model2)
+anova(model2)
+summary(model2)
+```
+### Covariates
 
+A third model
 
-```{r, echo=T}
-model1 <- lmerTest::lmer(time ~ 
+```
+model3 <- lmerTest::lmer(time ~ 
                            order*condition
                          + age
                          + gender
                          + (1+condition|ID), data=x)
 
+anova(model1, model2, model3)
+anova(model3)
+summary(model3)
+```
+
+
+### Follow-up Analysis
+
+#### Testing for 'carry-over' presence effects
+
+The above models will provide a test of our hypotheses. However in order to interpret any effects, follow-up analyses will be required.
+
+First we will isolate trials 2 and 3 and conduct a 2x2 mixed between-within ANOVA to test for an interaction between order and presence, across the two groups. The between subjects IV is group (A vs B) and the within subjects IV is condition (together vs alone).
+
+```
+rstatix::anova_test(
+  data = x, dv = time, wid = ID,
+  within = condition,
+  between = group
+)
+
+#  ---------  #
+# for pairwise comparisons
+
+x$condition3 <- paste(x$condition, x$group)
+
+aov1 <- aov(time ~ condition3,x)
+summary(aov1)
+TukeyHSD(aov1)
+
+```
+
+#### Interpreting Order Effects (between groups)
+
+Because of differences in presence effects, any order effects may vary depending on group/block (A vs B). To test this we will conduct a 2x4 mixed between-within subjects ANOVA with group as the between subjects IV (group A vs group B), and trial number as the within subject IV (4 levels, Trial 1- Trial 4).
+
+
+```
+
+rstatix::anova_test(
+  data = x, dv = time, wid = ID,
+  within = order,
+  between = group
+)
+
+x$condition3 <- paste(x$order, x$group)
+
+aov1 <- aov(time ~ condition3,x)
+summary(aov1)
+TukeyHSD(aov1)
+
+
+```
+
+# Power
+
+A-priori power analyses showed that to detect a small (*f* = .02) main effects for condition, and order and a small order x interaction effect a minimum sample of 184 participants is required.
+
+# Sample Analysis
+
+Below we present a sample analysis described above using simulated data.
+
+## Hypothesis Testing
+
+### Model 1 Condition
+
+```{r, echo=T}
+model1 <- lmerTest::lmer(time ~ 
+                           condition
+                         + (1+condition|ID), data=x)
+
 summary(model1)
-model1
 anova(model1)
 ```
 
-# Initial Tests
-
-## Check the ANOVA Table
 
 ```{r, include=TRUE}
 anova(model1)
 summary(model1)
 ```
 
-# Follow-Up Analyses
+### Model 2 Condition with Order as Interaction term
+
+```{r, echo=T}
+model2 <- lmerTest::lmer(time ~ 
+                           order*condition
+                         + (1+condition|ID), data=x)
+
+
+anova(model1,model2)
+anova(model2)
+summary(model2)
+
+```
+
+```{r, include=TRUE}
+
+anova(model1,model2)
+anova(model2)
+summary(model2)
+
+```
+
+### Model 3 Covariates Added
+
+```{r, echo=T}
+model3 <- lmerTest::lmer(time ~ 
+                           order*condition
+                         + age
+                         + gender
+                         + (1+condition|ID), data=x)
+
+anova(model1,model2,model3)
+anova(model3)
+summary(model3)
+```
+
+
+```{r include=TRUE}
+anova(model1,model2,model3)
+anova(model3)
+summary(model3)
+```
+ 
+# Follow-up Analyses
 
 ```{r}
 
@@ -121,9 +248,9 @@ x <- df[which(x$order==2|x$order==3),]
 
 ## Isolate Trials 2 and 3
 
-### Test for differences depending on Condition
+### Test for 'carry-over' presence effects
 
-Basic Descriptives
+#### Basic Descriptive Statistics
 
 ```{r, include=TRUE}
 tapply(x$time, x$condition, descriptives)
@@ -134,7 +261,7 @@ tapply(x$time, x$condition, descriptives)
 tapply(x$time, x$group, descriptives)
 ```
 
-Mixed between-within factorial ANOVA
+#### Testing for differences
 
 ```{r, include=TRUE}
 
@@ -147,6 +274,7 @@ rstatix::anova_test(
 
 ```
 
+#### Post-hoc Contrast
 
 ```{r, include=TRUE}
 x$condition3 <- paste(x$condition, x$group)
@@ -163,6 +291,7 @@ TukeyHSD(aov1)
 tapply(x$time, x$condition3, descriptives)
 ```
 
+#### Plotting the Responses
 
 ```{r, include=TRUE}
 
@@ -182,9 +311,9 @@ ggplot(x,aes(x=(condition3),y=time, fill = condition))+
 ```
 
 
-### Test for Order Effects within sub-sample
+### Test for Order Effects (depending on group)
 
-Basic Descriptives
+#### Basic Descriptive Statistics
 
 ```{r}
 x <- df
@@ -199,7 +328,7 @@ tapply(x$time, x$order, descriptives)
 tapply(x$time, x$group, descriptives)
 ```
 
-Mixed between-within factorial ANOVA
+#### Testing for differences
 
 ```{r, include=TRUE}
 
@@ -211,7 +340,7 @@ rstatix::anova_test(
 
 ```
 
-
+#### Contrasts
 
 ```{r, include=TRUE}
 x$condition3 <- paste(x$order, x$group)
@@ -228,6 +357,7 @@ TukeyHSD(aov1)
 tapply(x$time, x$condition3, descriptives)
 ```
 
+#### Plotting the Responses
 
 ```{r, include=TRUE}
 
