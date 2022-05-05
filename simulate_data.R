@@ -64,16 +64,16 @@ a$ID <- unlist(lapply(c(1:(N/8)), a_make_ID_fun))
 
 
 y <- a[which(a$order=="1"),]
-y$time <- rnorm(n=(N/8),mean = 44, sd = 4.5)
+y$time <- rnorm(n=(N/8),mean = 39.4, sd = 3.3)
 round1 <- y
 y <- a[which(a$order=="2"),]
-y$time <- rnorm(n=(N/8),mean = 43.5, sd = 4)
+y$time <- rnorm(n=(N/8),mean = 39, sd = 3.5)
 round2 <- y
 y <- a[which(a$order=="3"),]
-y$time <- rnorm(n=(N/8),mean = 41.3, sd = 4.5)
+y$time <- rnorm(n=(N/8),mean = 37.3, sd = 3.1)
 round3 <- y
 y <- a[which(a$order=="4"),]
-y$time <- rnorm(n=(N/8),mean = 41.6, sd = 4.2)
+y$time <- rnorm(n=(N/8),mean = 37.5, sd = 2.9)
 round4 <- y
 
 a <- rbind(round1, round2, round3, round4)
@@ -103,16 +103,16 @@ b$ID <- unlist(lapply(c(1:(N/8)), b_make_ID_fun))
 
 
 y <- b[which(b$order=="1"),]
-y$time <- rnorm(n=(N/8),mean = 44, sd = 4.4)
+y$time <- rnorm(n=(N/8),mean = 39.6, sd = 3.4)
 round1 <- y
 y <- b[which(b$order=="2"),]
-y$time <- rnorm(n=(N/8),mean = 41.4, sd = 4.1)
+y$time <- rnorm(n=(N/8),mean = 37.7, sd = 3.1)
 round2 <- y
 y <- b[which(b$order=="3"),]
-y$time <- rnorm(n=(N/8),mean = 41.2, sd = 4.2)
+y$time <- rnorm(n=(N/8),mean = 37.9, sd = 3.2)
 round3 <- y
 y <- b[which(b$order=="4"),]
-y$time <- rnorm(n=(N/8),mean = 41.1, sd = 3.9)
+y$time <- rnorm(n=(N/8),mean = 37.1, sd = 3.9)
 round4 <- y
 
 b <- rbind(round1, round2, round3, round4)

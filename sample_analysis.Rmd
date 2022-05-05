@@ -2,7 +2,7 @@
 title: "Triplett Replication"
 subtitle: "Sample Analysis on Simulated Data"
 author: "Cillian McHugh"
-date: "7th March 2022"
+date: "5th May 2022"
 bibliography: "resources/bib/My Library.bib"
 csl: "resources/bib/apa.csl"
 output:
@@ -39,19 +39,6 @@ library(desnum)
 
 ```
 
-
-```{r}
-
-n <- 200 # must be divisible by 2
-#n <- 184 # must be divisible by 2
-#n <- 184 # must be divisible by 2
-N <- 4*n
-save(N, file = "N.RData")
-
-source("simulate_data.R")
-x <- df
-
-```
 
 
 # Overview
@@ -169,9 +156,108 @@ TukeyHSD(aov1)
 
 # Power
 
-A-priori power analyses showed that to detect a small (*f* = .02) main effects for condition, and order and a small order x interaction effect a minimum sample of 184 participants is required.
+A-priori power analyses showed that to detect a small effect (*f* ^2^ = .02) a minimum sample of *N* 400 participants is required. Detecting a medium effect (*f* ^2^ = .15) requires a sample of *N* = 54, and detecting a large effect (*f* ^2^ = .35) requires a sample of *N* = 24. We aim to collect 400 participants.
+
+## Small Effect
+```{r, include = FALSE}
+rm(list = ls())
+number_of_participants <- 400
+n1 <- 10
+n2 <- number_of_participants/2
+f <- .02
+
+file.remove("N_power.RData")
+```
+
+```{r, include = FALSE}
+save(n1,n2,f, file = "N_power.RData")
+```
+
+```{r, include = FALSE}
+source("power_script.R")
+test
+pwr::pwr.f2.test(u = test$NumDF, v = test$DenDF, f2 = f, sig.level =  .05)
+f_original <- MuMIn::r.squaredGLMM(model1)[1]/(1-MuMIn::r.squaredGLMM(model1)[1])
+f_original
+pwr::pwr.f2.test(u = test$NumDF, v = test$DenDF, f2 = f, sig.level =  .05)
+```
+
+```{r, include = TRUE}
+pwr::pwr.f2.test(u = 1, v = 399, f2 = f, sig.level =  .05)
+```
+
+## Medium Effect
+```{r, include = FALSE}
+rm(list = ls())
+number_of_participants <- 54
+n1 <- 10
+n2 <- number_of_participants/2
+f <- .15
+
+file.remove("N_power.RData")
+```
+
+```{r, include = FALSE}
+save(n1,n2,f, file = "N_power.RData")
+```
+
+```{r, include = FALSE}
+source("power_script.R")
+test
+pwr::pwr.f2.test(u = test$NumDF, v = test$DenDF, f2 = f, sig.level =  .05)
+f_original <- MuMIn::r.squaredGLMM(model1)[1]/(1-MuMIn::r.squaredGLMM(model1)[1])
+f_original
+pwr::pwr.f2.test(u = test$NumDF, v = test$DenDF, f2 = f, sig.level =  .05)
+```
+
+```{r, include = TRUE}
+pwr::pwr.f2.test(u = 1, v = 53, f2 = f, sig.level =  .05)
+```
+
+## Large Effect
+```{r, include = FALSE}
+rm(list = ls())
+number_of_participants <- 24
+n1 <- 10
+n2 <- number_of_participants/2
+f <- .35
+
+file.remove("N_power.RData")
+```
+
+```{r, include = FALSE}
+save(n1,n2,f, file = "N_power.RData")
+```
+
+```{r, include = FALSE}
+source("power_script.R")
+test
+pwr::pwr.f2.test(u = test$NumDF, v = test$DenDF, f2 = f, sig.level =  .05)
+f_original <- MuMIn::r.squaredGLMM(model1)[1]/(1-MuMIn::r.squaredGLMM(model1)[1])
+f_original
+pwr::pwr.f2.test(u = test$NumDF, v = test$DenDF, f2 = f, sig.level =  .05)
+```
+
+```{r, include = TRUE}
+pwr::pwr.f2.test(u = 1, v = 23, f2 = f, sig.level =  .05)
+```
 
 # Sample Analysis
+
+
+```{r}
+
+n <- 100 # must be divisible by 2
+#n <- 184 # must be divisible by 2
+#n <- 184 # must be divisible by 2
+N <- 4*n
+save(N, file = "N.RData")
+
+source("simulate_data.R")
+x <- df
+
+```
+
 
 Below we present a sample analysis described above using simulated data.
 
