@@ -1,7 +1,7 @@
 ---
 title: "Triplett Replication"
 subtitle: "Sample Analysis on Simulated Data"
-author: "Cillian McHugh"
+author: "*Blinded*"
 date: "5th May 2022"
 bibliography: "resources/bib/My Library.bib"
 csl: "resources/bib/apa.csl"
@@ -247,7 +247,7 @@ pwr::pwr.f2.test(u = 1, v = 23, f2 = f, sig.level =  .05)
 
 ```{r}
 
-n <- 100 # must be divisible by 2
+n <- 400 # must be divisible by 2
 #n <- 184 # must be divisible by 2
 #n <- 184 # must be divisible by 2
 N <- 4*n
@@ -256,10 +256,11 @@ save(N, file = "N.RData")
 source("simulate_data.R")
 x <- df
 
+length(x$gender)/4
 ```
 
 
-Below we present a sample analysis described above using simulated data.
+Below we present a sample analysis described above using simulated data for *N* = `r length(x$gender)/4`.
 
 ## Hypothesis Testing
 
@@ -306,8 +307,7 @@ summary(model2)
 
 ```{r, echo=T}
 model3 <- lmerTest::lmer(time ~ 
-                           order*condition
-                         + age
+                           order*condition*age
                          + gender
                          + (1+condition|ID), data=x)
 
